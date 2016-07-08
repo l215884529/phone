@@ -35,9 +35,6 @@ typedef struct data_t {
 	int *s;
 } data_t;
 
-/* fd から 必ず n バイト読み, bufへ書く.
-   n バイト未満でEOFに達したら, 残りは0で埋める.
-   fd から読み出されたバイト数を返す */
 ssize_t read_n(int fd, ssize_t n, void * buf) {
 	ssize_t re = 0;
 	while (re < n) {
@@ -50,7 +47,6 @@ ssize_t read_n(int fd, ssize_t n, void * buf) {
 	return re;
 }
 
-/* fdへ, bufからnバイト書く */
 ssize_t write_n(int fd, ssize_t n, void * buf) {
 	ssize_t wr = 0;
 	while (wr < n) {
