@@ -38,7 +38,7 @@ int is_silence(complex double *data_rec, int n) {
 	int i;
 	double sum = 0.0;
 	for (i = 0; i < n; i++) {
-		sum += cabs(data_rec[i]);
+		sum += pow(cabs(data_rec[i]), 2);
 	}
 	
 	return sum < min;
