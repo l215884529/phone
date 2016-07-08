@@ -72,8 +72,8 @@ void *accept_connection(void *arg) {
 
 void calculate_sample_count() {
 	int i;
-	for (i = 0; i < SAMPLE; i++) {
-		const int freq = (int)((i + 1) * 44100.0 / (SAMPLE - 1));
+	for (i = 1; i < SAMPLE / 2; i++) {
+		const int freq = (int)(i * 44100.0 / SAMPLE);
 		if (freq >= FREQ_MIN && freq <= FREQ_MAX) N++;
 	}
 }
@@ -164,13 +164,18 @@ int main(int argc, char *argv[]) {
 			case RES_OK:
 				n = read_n(s, sizeof(complex double) * N, data);
 //				n = recv(s, data, sizeof(complex double) * N, 0);
+				fprintf(stderr, "Received %d bytes.", n);
 				if (n == -1) die("recv");
 				if (n == 0) break;
 				re_cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);
+				/* for (int i = 0; i < SAMPLE; i++) { */
+				/* 	fprintf(stderr, "%d %f\n", i, cabs(Y[i])); */
+				/* } */
 				ifft(Y, X, SAMPLE);
 				complex_to_sample(X, buf, SAMPLE);
 				re_hamming_window(buf, SAMPLE);
 				write_n(1, sizeof(sample_t) * SAMPLE / 2, buf + SAMPLE / 4);
+
 				break;
 			case RES_SI:
 				break;

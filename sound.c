@@ -26,6 +26,9 @@ void re_cut_off(complex double *data, complex double *Y, int low, int high, long
 		if (freq >= low && freq <= high) {
 			Y[i] = data[count++];
 			Y[n - i] = conj(Y[i]);
+		} else {
+			Y[i] = 0;
+			Y[n - i] = 0;
 		}
 	}
 }
