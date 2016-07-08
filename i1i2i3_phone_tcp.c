@@ -80,6 +80,7 @@ void calculate_sample_count() {
 }
 
 void set_response_with_data(char *response, complex double *data, int n) {
+	static int count = 0;
 	if (is_silence(data, n)) {
 		switch (*response) {
 		case RES_OK:
@@ -89,7 +90,11 @@ void set_response_with_data(char *response, complex double *data, int n) {
 			*response = RES_SI;
 			break;
 		case RES_OK_TO_SI:
-			*response = RES_SI;
+			count++;
+			if (count == 5) {
+				count = 0;
+				*response = RES_SI;
+			}
 			break;
 		default:
 			break;
@@ -168,7 +173,6 @@ int main(int argc, char *argv[]) {
 			switch (response_send) {
 			case RES_OK:
 			case RES_OK_TO_SI:
-				fprintf(stderr, "OK_TO_SI");
 				write_n(s, sizeof(complex double) * N, data);
 //				n = send(s, data, sizeof(complex double) * N, 0);
 				break;
