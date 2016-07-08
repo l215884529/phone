@@ -79,6 +79,26 @@ void calculate_sample_count() {
 	}
 }
 
+void set_response_with_data(char *response, complex double *data, int n) {
+	if (is_silence(data, n)) {
+		switch (*response) {
+		case RES_OK:
+			*response = RES_OK_TO_SI;
+			break;
+		case RES_SI:
+			*response = RES_SI;
+			break;
+		case RES_OK_TO_SI:
+			*response = RES_SI;
+			break;
+		default:
+			break;
+		}
+	} else {
+		*response = RES_OK;
+	}
+}
+
 int main(int argc, char *argv[]) {
 	calculate_sample_count();
 	node_type_t type = 0;
@@ -143,27 +163,12 @@ int main(int argc, char *argv[]) {
 			sample_to_complex(buf, X, SAMPLE);
 			fft(X, Y, SAMPLE);
 			cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);
-			if (is_silence(data, N)) {
-				switch (response_send) {
-				case RES_OK:
-					response_send = RES_OK_TO_SI;
-					break;
-				case RES_SI:
-					response_send = RES_SI;
-					break;
-				case RES_OK_TO_SI:
-					response_send = RES_SI;
-					break;
-				default:
-					break;
-				}
-			} else {
-				response_send = RES_OK;
-			}
+			set_response_with_data(&response_send, data, N);
 			send(s, &response_send, sizeof(char), 0);
 			switch (response_send) {
 			case RES_OK:
 			case RES_OK_TO_SI:
+				fprintf(stderr, "OK_TO_SI");
 				write_n(s, sizeof(complex double) * N, data);
 //				n = send(s, data, sizeof(complex double) * N, 0);
 				break;
@@ -183,13 +188,9 @@ int main(int argc, char *argv[]) {
 			case RES_OK_TO_SI:
 				n = read_n(s, sizeof(complex double) * N, data);
 //				n = recv(s, data, sizeof(complex double) * N, 0);
-				fprintf(stderr, "Received %d bytes.", n);
 				if (n == -1) die("recv");
 				if (n == 0) break;
 				re_cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);
-				/* for (int i = 0; i < SAMPLE; i++) { */
-				/* 	fprintf(stderr, "%d %f\n", i, cabs(Y[i])); */
-				/* } */
 				ifft(Y, X, SAMPLE);
 				complex_to_sample(X, buf, SAMPLE);
 				re_hamming_window(buf, SAMPLE);
