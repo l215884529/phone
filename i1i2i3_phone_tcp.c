@@ -21,6 +21,7 @@
 #define FREQ_MAX 3000
 #define RES_OK 0
 #define RES_SI 1
+#define RES_OK_TO_SI 2
 
 int N = 0;
 
@@ -93,7 +94,7 @@ int main(int argc, char *argv[]) {
 	complex double *data = (complex double *)malloc(sizeof(complex double) * N);
 	sample_t *buf = (sample_t *)malloc(sizeof(sample_t) * SAMPLE);
 	sample_t *prev_data = (sample_t *)malloc(sizeof(sample_t) * SAMPLE / 2);
-	char response;
+	char response_send, response_recv;
 	int m, n;
 
 	if (argc == 2) {
@@ -142,10 +143,27 @@ int main(int argc, char *argv[]) {
 			sample_to_complex(buf, X, SAMPLE);
 			fft(X, Y, SAMPLE);
 			cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);
-			response = is_silence(data, N) ? RES_SI : RES_OK;
-			send(s, &response, sizeof(char), 0);
-			switch (response) {
+			if (is_silence(data, N)) {
+				switch (response_send) {
+				case RES_OK:
+					response_send = RES_OK_TO_SI;
+					break;
+				case RES_SI:
+					response_send = RES_SI;
+					break;
+				case RES_OK_TO_SI:
+					response_send = RES_SI;
+					break;
+				default:
+					break;
+				}
+			} else {
+				response_send = RES_OK;
+			}
+			send(s, &response_send, sizeof(char), 0);
+			switch (response_send) {
 			case RES_OK:
+			case RES_OK_TO_SI:
 				write_n(s, sizeof(complex double) * N, data);
 //				n = send(s, data, sizeof(complex double) * N, 0);
 				break;
@@ -156,12 +174,13 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 
-//			n = recv(s, &response, sizeof(char), 0);
-			n = read_n(s, sizeof(char), &response);
+//			n = recv(s, &response_recv, sizeof(char), 0);
+			n = read_n(s, sizeof(char), &response_recv);
 			if (n == -1) die("recv");
 			if (n == 0) break;
-			switch (response) {
+			switch (response_recv) {
 			case RES_OK:
+			case RES_OK_TO_SI:
 				n = read_n(s, sizeof(complex double) * N, data);
 //				n = recv(s, data, sizeof(complex double) * N, 0);
 				fprintf(stderr, "Received %d bytes.", n);
