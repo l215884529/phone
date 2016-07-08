@@ -142,25 +142,22 @@ int main(int argc, char *argv[]) {
 			sample_to_complex(buf, X, SAMPLE);
 			fft(X, Y, SAMPLE);
 			cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);
-			if (is_silence(data, N)) {
-				response = RES_SI;
-			} else {
-				response = RES_OK;
-			}
+			response = is_silence(data, N) ? RES_SI : RES_OK;
 			send(s, &response, sizeof(char), 0);
 			switch (response) {
 			case RES_OK:
-//				write_n(s, sizeof(complex double) * N, data_send);
-				n = send(s, data, sizeof(complex double) * N, 0);
+				write_n(s, sizeof(complex double) * N, data);
+//				n = send(s, data, sizeof(complex double) * N, 0);
 				break;
 			case RES_SI:
+				memset(prev_data, 0, sizeof(sample_t) * SAMPLE / 2);
 				break;
 			default:
 				break;
 			}
 
-			n = recv(s, &response, sizeof(char), 0);
-//			n = read_n(s, sizeof(char), &response_recv);
+//			n = recv(s, &response, sizeof(char), 0);
+			n = read_n(s, sizeof(char), &response);
 			if (n == -1) die("recv");
 			if (n == 0) break;
 			switch (response) {
