@@ -79,7 +79,7 @@ void calculate_sample_count() {
 	}
 }
 
-void set_response_with_data(char *response, complex double *data, int n) {
+void set_response_with_data(char *response, complex short *data, int n) {
 	static int count = 0;
 	if (is_silence(data, n)) {
 		switch (*response) {
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 	pthread_t th;
 	complex double *X = (complex double *)malloc(sizeof(complex double) * SAMPLE);
 	complex double *Y = (complex double *)malloc(sizeof(complex double) * SAMPLE);
-	complex double *data = (complex double *)malloc(sizeof(complex double) * N);
+	complex short *data = (complex short *)malloc(sizeof(complex short) * N);
 	sample_t *buf = (sample_t *)malloc(sizeof(sample_t) * SAMPLE);
 	sample_t *prev_data = (sample_t *)malloc(sizeof(sample_t) * SAMPLE / 2);
 	char response_send, response_recv;
@@ -173,8 +173,8 @@ int main(int argc, char *argv[]) {
 			switch (response_send) {
 			case RES_OK:
 			case RES_OK_TO_SI:
-				write_n(s, sizeof(complex double) * N, data);
-//				n = send(s, data, sizeof(complex double) * N, 0);
+				write_n(s, sizeof(complex short) * N, data);
+//				n = send(s, data, sizeof(complex short) * N, 0);
 				break;
 			case RES_SI:
 				memset(prev_data, 0, sizeof(sample_t) * SAMPLE / 2);
@@ -190,8 +190,8 @@ int main(int argc, char *argv[]) {
 			switch (response_recv) {
 			case RES_OK:
 			case RES_OK_TO_SI:
-				n = read_n(s, sizeof(complex double) * N, data);
-//				n = recv(s, data, sizeof(complex double) * N, 0);
+				n = read_n(s, sizeof(complex short) * N, data);
+//				n = recv(s, data, sizeof(complex short) * N, 0);
 				if (n == -1) die("recv");
 				if (n == 0) break;
 				re_cut_off(data, Y, FREQ_MIN, FREQ_MAX, SAMPLE);

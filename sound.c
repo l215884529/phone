@@ -7,18 +7,18 @@
 
 typedef short sample_t;
 
-void cut_off(complex double *data, complex double *Y, int low, int high, long n) {
+void cut_off(complex short *data, complex double *Y, int low, int high, long n) {
 	long i;
 	int count = 0;
 	for (i = 1; i <= n / 2; i++) {
 		const int freq = (int)(i * 44100.0 / n);
 		if (freq >= low && freq <= high) {
-			data[count++] = Y[i];
+			data[count++] = (complex short)Y[i];
 		}
 	}
 }
 
-void re_cut_off(complex double *data, complex double *Y, int low, int high, long n) {
+void re_cut_off(complex short *data, complex double *Y, int low, int high, long n) {
 	long i;
 	int count = 0;
 	for (i = 1; i < n / 2; i++) {
@@ -33,10 +33,10 @@ void re_cut_off(complex double *data, complex double *Y, int low, int high, long
 	}
 }
 
-int is_silence(complex double *data_rec, int n) {
+int is_silence(complex short *data_rec, int n) {
 	const int min = VOLUME_THRESHOLD;
 	int i;
-	double sum = 0.0;
+	int sum = 0;
 	for (i = 0; i < n; i++) {
 		sum += pow(cabs(data_rec[i]), 2);
 	}
