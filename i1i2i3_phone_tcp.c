@@ -91,7 +91,7 @@ void set_response_with_data(char *response, complex short *data, int n) {
 			break;
 		case RES_OK_TO_SI:
 			count++;
-			if (count == 5) {
+			if (count == 3) {
 				count = 0;
 				*response = RES_SI;
 			}
@@ -199,7 +199,6 @@ int main(int argc, char *argv[]) {
 				complex_to_sample(X, buf, SAMPLE);
 				re_hamming_window(buf, SAMPLE);
 				write_n(1, sizeof(sample_t) * SAMPLE / 2, buf + SAMPLE / 4);
-
 				break;
 			case RES_SI:
 				break;
