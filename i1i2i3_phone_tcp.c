@@ -67,6 +67,8 @@ void *accept_connection(void *arg) {
 	*(d.s) = accept(ss, (struct sockaddr *)&client_addr, &len);
 	if (*(d.s) == -1) die("accept");
 	*(d.status) = 1;
+
+	fprintf(stderr, "Connected to %s:%d.\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 	
 	return (void *)NULL;
 }
@@ -146,12 +148,18 @@ int main(int argc, char *argv[]) {
 		if (bind(ss, (struct sockaddr *)&addr, sizeof(addr)) == -1) die("bind");
 		if (listen(ss, 10) == -1) die("listen");
 		if (pthread_create(&th, NULL, accept_connection, (void *)&d) != 0) die("pthread_create");
+
+		fprintf(stderr, "Waiting...\n");
+
 		break;
 	case CLIENT:
 		if (inet_aton(argv[1], &addr.sin_addr) == 0) die("inet_aton");
 		if (connect(ss, (struct sockaddr *)&addr, sizeof(addr)) == -1) die("connect");
 		s = ss;
 		status = 1;
+		
+		fprintf(stderr, "Connected to %s:%d.\n", argv[1], port);
+		
 		break;
 	default:
 		break;
